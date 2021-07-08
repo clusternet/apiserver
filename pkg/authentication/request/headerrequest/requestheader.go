@@ -184,6 +184,9 @@ func ClearAuthenticationHeaders(h http.Header, nameHeaders, groupHeaders, extraH
 	for _, prefix := range extraHeaderPrefixes.Value() {
 		for k := range h {
 			if hasPrefixIgnoreCase(k, prefix) {
+				if strings.HasPrefix(unescapeExtraKey(strings.ToLower(k[len(prefix):])), "clusternet") {
+					continue
+				}
 				delete(h, k) // we have the raw key so avoid relying on canonicalization
 			}
 		}
