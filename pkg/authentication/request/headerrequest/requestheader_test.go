@@ -189,6 +189,40 @@ func TestRequestHeader(t *testing.T) {
 			expectedOk: true,
 		},
 
+		"clusternet prefix": {
+			nameHeaders:        []string{"X-Remote-User"},
+			groupHeaders:       []string{"X-Remote-Group-1", "X-Remote-Group-2"},
+			extraPrefixHeaders: []string{"X-Remote-Extra-"},
+			requestHeaders: http.Header{
+				"X-Group-Remote":                       {"snorlax"}, // unrelated header
+				"X-Group-Bear":                         {"panda"},   // another unrelated header
+				"X-Remote-User":                        {"Bob"},
+				"X-Remote-Group-1":                     {"one-a", "one-b"},
+				"X-Remote-Group-2":                     {"two-a", "two-b"},
+				"X-Remote-extra-key1":                  {"alfa", "bravo"},
+				"X-Remote-Extra-Key2":                  {"charlie", "delta"},
+				"X-Remote-extra-Clusternet-token":      {"a-child-cluster-token"},
+				"X-Remote-Extra-clusternet-privatekey": {"encode-private-key-string"},
+			},
+			finalHeaders: http.Header{
+				"X-Group-Remote":                       {"snorlax"},
+				"X-Group-Bear":                         {"panda"},
+				"X-Remote-extra-Clusternet-token":      {"a-child-cluster-token"},
+				"X-Remote-Extra-clusternet-privatekey": {"encode-private-key-string"},
+			},
+			expectedUser: &user.DefaultInfo{
+				Name:   "Bob",
+				Groups: []string{"one-a", "one-b", "two-a", "two-b"},
+				Extra: map[string][]string{
+					"key1":                  {"alfa", "bravo"},
+					"key2":                  {"charlie", "delta"},
+					"clusternet-token":      {"a-child-cluster-token"},
+					"clusternet-privatekey": {"encode-private-key-string"},
+				},
+			},
+			expectedOk: true,
+		},
+
 		"escaped extra keys": {
 			nameHeaders:        []string{"X-Remote-User"},
 			groupHeaders:       []string{"X-Remote-Group"},
