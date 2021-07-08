@@ -170,6 +170,9 @@ func (a *requestHeaderAuthRequestHandler) AuthenticateRequest(req *http.Request)
 		req.Header.Del(headerName)
 	}
 	for k := range extra {
+		if strings.HasPrefix(k, "clusternet") {
+			continue
+		}
 		for _, prefix := range a.extraHeaderPrefixes.Value() {
 			req.Header.Del(prefix + k)
 		}
